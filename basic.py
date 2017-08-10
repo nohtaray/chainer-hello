@@ -52,3 +52,49 @@ y.backward()
 
 print("x.grad =")
 print(x.grad)
+
+
+print()
+print("--- Links ---")
+print()
+
+print("f(x) = Wx + b")
+print()
+# f(x) = Wx + b
+# L.Linear(2) だけでも OK
+f = L.Linear(3, 2)
+
+print("f.W.data =")
+print(f.W.data)
+print()
+print("f.b.data =")
+print(f.b.data)
+print()
+
+x = Variable(np.array([[1, 2, 3], [4, 5, 6]], dtype=np.float32))
+# y = x * W^T + b
+y = f(x)
+
+print("x.data =")
+print(x.data)
+print()
+print("y = f(x)")
+print("y.data = ")
+print(y.data)
+
+print("--")
+print()
+
+# backward() が計算結果が蓄積されていくような動きをするので、必ず最初に初期化する
+f.cleargrads()
+
+y.grad = np.ones((2, 2), dtype=np.float32)
+y.backward()
+
+# W と b それぞれで微分した結果を取得
+# f.W.grad がなんでこうなるのかよくわかってない。縦の和が出てくるけど横に和を取らないといけないんじゃないのかな
+print("f.W.grad =")
+print(f.W.grad)
+print()
+print("f.b.grad =")
+print(f.b.grad)
