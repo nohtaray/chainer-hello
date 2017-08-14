@@ -89,3 +89,41 @@ print(y.data)
 
 # 他に ChainList というクラスもあって、動的に層の数を変えられる。
 # 層の数が決まってるんだったら Chain クラスを使うのを推奨。
+
+
+print()
+print("--- Optimizer ---")
+print()
+
+
+model = MyChain()
+optimizer = optimizers.SGD()
+optimizer.setup(model)
+
+# Regularization の処理を追加。add_hook するとパラメータのアップデートの直前に呼ばれる。
+# 渡すのは callable だったらなんでもいい
+optimizer.add_hook(chainer.optimizer.WeightDecay(0.0005))
+
+
+# 最適化方法1: optimizer.update() を引数なしで呼ぶ
+# 2, 4 のサイズで、1から-1の float 値をランダムに生成
+x = np.random.uniform(-1, 1, (2, 4)).astype('f')
+model.cleargrads()
+# compute gradient
+loss = F.sum(model(chainer.Variable(x)))
+loss.backward()
+# loss が小さくなるように model のパラメータ（model.l1, model.l2）をアップデートする
+optimizer.update()
+
+
+# 最適化方法2: optimizer.update() を引数ありで呼ぶ
+def lossfun(arg1, arg2):
+    # calculate loss
+    loss = F.sum(model(arg1 - arg2))
+    return loss
+arg1 = np.random.uniform(-1, 1, (2, 4)).astype('f')
+arg2 = np.random.uniform(-1, 1, (2, 4)).astype('f')
+for i in range(100):
+    # 誤差を計算する関数と、それに渡す引数を順に渡してあげる。
+    # この場合 model.cleargrads() は不要。勝手に呼んでくれる
+    optimizer.update(lossfun, chainer.Variable(arg1), chainer.Variable(arg2))
